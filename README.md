@@ -1,4 +1,4 @@
-# Deal or No Deal · 兩個人的遊戲
+# Deal or No Deal
 
 適合手機操作的 18 張牌小遊戲。
 
