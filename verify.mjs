@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import { AMOUNTS, ROUNDS, createGame, selectCard, noDeal, deal } from './site/game.mjs';
+import { AMOUNTS, ROUNDS, SCALES, createGame, selectCard, noDeal, deal } from './site/game.mjs';
 const sorted = a => [...a].sort((x,y)=>x-y);
 assert.equal(AMOUNTS.length,18); assert.equal(ROUNDS.reduce((a,b)=>a+b),17);
 for(let run=0;run<50;run++) {
-  const g = createGame(); assert.deepEqual(sorted(g.cards.map(c=>c.amount)),sorted(AMOUNTS));
+  const scale = SCALES[run % SCALES.length];
+  const g = createGame(Math.random,scale);
+  assert.deepEqual(sorted(g.cards.map(c=>c.amount)),sorted(AMOUNTS.map(amount=>Math.round(amount*scale))));
+  assert.deepEqual(g.amounts,AMOUNTS.map(amount=>Math.round(amount*scale)));
   assert.equal(new Set(g.cards.map(c=>c.prize)).size,18);
   assert.equal(selectCard(g,0),true); assert.equal(selectCard(g,0),false);
   let card=1;
@@ -27,5 +30,17 @@ assert.equal(g.opened.length,17); assert.equal(selectCard(g,17),false); assert.e
 const duplicate = createGame(()=>.999); selectCard(duplicate,17); selectCard(duplicate,0);
 assert.equal(duplicate.opened.map(i=>duplicate.cards[i].prize).length,1);
 assert.equal(duplicate.cards[0].amount,1000); assert.equal(duplicate.cards[1].amount,1000);
-console.log('Passed: 50 full seven-round games, amount distribution, duplicate prizes, invalid actions, Deal settlement, and all post-Deal reveals without changing the result.');
+for (const scale of SCALES) {
+  const scaled = createGame(()=>.999,scale);
+  assert.equal(Math.min(...scaled.amounts),1000*scale);
+  assert.equal(Math.max(...scaled.amounts),10000*scale);
+  assert.equal(scaled.amounts.filter(amount=>amount===1000*scale).length,6);
+  selectCard(scaled,17); for(let i=0;i<5;i++)selectCard(scaled,i);
+  deal(scaled,777); assert.equal(scaled.result.amount,777);
+  selectCard(scaled,5); assert.equal(scaled.cards[5].amount,1000*scale);
+}
+assert.equal(createGame().scale,1);
+assert.throws(()=>createGame(Math.random,0.3),RangeError);
+assert.deepEqual(createGame(()=>.999,1).amounts,AMOUNTS);
+console.log('Passed: 50 complete games across all four scales, amount distribution, duplicate prizes, Deal settlement, unchanged manual offers, and post-Deal reveals.');
 

@@ -32,7 +32,7 @@
     <footer>一起選牌，也一起享受未知。<span>♠ ♥ ♣ ♦</span></footer>
   </div>
   <dialog id="card-dialog" class="card-dialog"><form method="dialog"><button class="dialog-x" aria-label="關閉">×</button></form><p id="dialog-label" class="eyebrow"></p><div id="dialog-number" class="reveal-number"></div><h2 id="dialog-title"></h2><div id="dialog-amount" class="dialog-amount"></div><p id="dialog-note"></p><button id="dialog-confirm" class="primary-button"></button></dialog>
-  <dialog id="reset-dialog" class="reset-dialog"><p class="eyebrow">新的一局</p><h2>重新洗牌？</h2><p>這局的進度會清除，18 筆金額重新隨機分配。</p><div class="decision-buttons"><button id="cancel-reset" class="outline-button">繼續這局</button><button id="confirm-reset" class="primary-button">重新開始</button></div></dialog>
+  <dialog id="reset-dialog" class="reset-dialog"><p class="eyebrow">新的一局</p><h2>重新洗牌？</h2><p>這局的進度會清除，18 筆金額重新隨機分配。</p><fieldset class="scale-picker"><legend>金額比例</legend><div class="scale-options"><button type="button" data-scale="0.1" aria-pressed="false">0.1 倍</button><button type="button" data-scale="0.2" aria-pressed="false">0.2 倍</button><button type="button" data-scale="0.5" aria-pressed="false">0.5 倍</button><button type="button" data-scale="1" aria-pressed="true">1 倍</button></div></fieldset><p id="scale-preview" class="scale-preview" aria-live="polite">金額範圍：NT$ 1,000 ～ 10,000</p><div class="decision-buttons"><button id="cancel-reset" class="outline-button">繼續這局</button><button id="confirm-reset" class="primary-button">重新開始</button></div></dialog>
   <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <script type="module" src="app.mjs"></script>
 </body>

@@ -12,3 +12,10 @@
 @media(max-width:800px){.prize{padding:6px}.prize .prize-dot{display:none}.prize .value{width:100%;text-align:right}}
 @media(max-width:480px){.game-layout{grid-template-columns:minmax(0,1fr) minmax(136px,42%);gap:12px}.prize-list{gap:6px}.prize-column{gap:6px}.prize{padding:7px 5px}.prize-note{margin-top:12px}}
 @media(max-width:360px){.game-layout{grid-template-columns:minmax(0,1fr) 136px;gap:10px}}
+
+.scale-picker{border:0;padding:0;margin:24px 0 12px;text-align:left}
+.scale-picker legend{font-size:14px;color:var(--muted);margin-bottom:10px}
+.scale-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.scale-options button{min-height:48px;padding:10px 4px;border:1px solid #819178;border-radius:8px;background:transparent;color:var(--white);font-size:14px;white-space:nowrap}
+.scale-options button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#1d2c22;font-weight:700}
+.reset-dialog .scale-preview{color:var(--gold);margin:12px 0 20px;font-variant-numeric:tabular-nums}

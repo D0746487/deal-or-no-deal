@@ -1,12 +1,15 @@
 export const AMOUNTS = [1000,1000,1000,1000,1000,1000,1500,2000,2500,3000,4000,5000,6000,7000,8000,10000,10000,10000];
 export const ROUNDS = [5,4,3,2,1,1,1];
-export function createGame(random = Math.random) {
-  const cards = AMOUNTS.map((amount, prize) => ({ amount, prize }));
+export const SCALES = [0.1,0.2,0.5,1];
+export function createGame(random = Math.random, scale = 1) {
+  if (!SCALES.includes(scale)) throw new RangeError('Unsupported amount scale');
+  const amounts = AMOUNTS.map(amount => Math.round(amount * scale));
+  const cards = amounts.map((amount, prize) => ({ amount, prize }));
   for (let i = cards.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [cards[i], cards[j]] = [cards[j], cards[i]];
   }
-  return { cards, selected: null, opened: [], round: 0, inRound: 0, phase: 'choose', offer: null, result: null };
+  return { cards, amounts, scale, selected: null, opened: [], round: 0, inRound: 0, phase: 'choose', offer: null, result: null };
 }
 export function selectCard(game, index) {
   if (!Number.isInteger(index) || index < 0 || index >= 18) return false;

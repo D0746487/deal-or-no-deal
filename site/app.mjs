@@ -1,9 +1,10 @@
-import { AMOUNTS, ROUNDS, createGame, selectCard, noDeal, deal } from './game.mjs';
+import { ROUNDS, createGame, selectCard, noDeal, deal } from './game.mjs';
 const $ = id => document.getElementById(id);
 const money = n => n.toLocaleString('zh-TW');
 let game = createGame();
 let pendingCard = null;
 let modalMode = null;
+let pendingScale = game.scale;
 function announce(text) { $('announcement').textContent = text; }
 function render() {
   const choosing = game.phase === 'choose', finished = game.phase === 'finished';
@@ -27,7 +28,7 @@ function render() {
   }));
   const outPrizes = new Set(game.opened.map(i => game.cards[i].prize));
   if (finished) outPrizes.add(game.cards[game.selected].prize);
-  const sortedPrizes = AMOUNTS.map((amount, prize) => ({ amount, prize })).sort((a,b) => a.amount-b.amount);
+  const sortedPrizes = game.amounts.map((amount, prize) => ({ amount, prize })).sort((a,b) => a.amount-b.amount);
   $('prize-list').replaceChildren(...[sortedPrizes.slice(0,9), sortedPrizes.slice(9)].map((prizes, columnIndex) => {
     const column = document.createElement('section');
     column.className = `prize-column ${columnIndex === 0 ? 'low' : 'high'}`;
@@ -85,9 +86,19 @@ $('deal').onclick = () => {
   render(); scrollToCurrent(); announce(`成交！接受報價 ${money(game.result.amount)} 元。`);
 };
 $('offer').addEventListener('input',()=> { $('offer-error').textContent=''; });
-$('restart').onclick = () => $('reset-dialog').showModal();
+function renderScaleOptions() {
+  document.querySelectorAll('[data-scale]').forEach(button => {
+    button.setAttribute('aria-pressed', String(Number(button.dataset.scale) === pendingScale));
+  });
+  $('scale-preview').textContent = `金額範圍：NT$ ${money(Math.round(1000 * pendingScale))} ～ ${money(Math.round(10000 * pendingScale))}`;
+}
+function openReset() { pendingScale = game.scale; renderScaleOptions(); $('reset-dialog').showModal(); }
+document.querySelectorAll('[data-scale]').forEach(button => {
+  button.onclick = () => { pendingScale = Number(button.dataset.scale); renderScaleOptions(); };
+});
+$('restart').onclick = openReset;
 $('cancel-reset').onclick = () => $('reset-dialog').close();
-function reset() { game = createGame(); pendingCard = null; modalMode = null; $('offer').value=''; $('offer-error').textContent=''; render(); window.scrollTo({top:0,behavior:'smooth'}); announce('新的一局已洗牌，請選你的底牌。'); }
-$('confirm-reset').onclick = () => { $('reset-dialog').close(); reset(); };
-$('play-again').onclick = reset;
+function reset(scale) { game = createGame(Math.random,scale); pendingCard = null; modalMode = null; $('offer').value=''; $('offer-error').textContent=''; render(); window.scrollTo({top:0,behavior:'smooth'}); announce(`新的一局已洗牌，金額為 ${scale} 倍，請選你的底牌。`); }
+$('confirm-reset').onclick = () => { $('reset-dialog').close(); reset(pendingScale); };
+$('play-again').onclick = openReset;
 render();
