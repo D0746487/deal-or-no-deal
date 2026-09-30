@@ -5,6 +5,7 @@ let game = createGame();
 let pendingCard = null;
 let modalMode = null;
 let pendingScale = game.scale;
+let gameStarted = false;
 function announce(text) { $('announcement').textContent = text; }
 function render() {
   const choosing = game.phase === 'choose', finished = game.phase === 'finished';
@@ -21,7 +22,7 @@ function render() {
   $('cards').replaceChildren(...game.cards.map((card, i) => {
     const opened = game.opened.includes(i), kept = game.selected === i;
     const button = document.createElement('button'); button.className = `playing-card ${opened ? 'opened' : ''} ${kept ? 'kept' : ''}`;
-    button.disabled = (!['choose','open'].includes(game.phase) && !afterDeal) || kept || opened;
+    button.disabled = !gameStarted || (!['choose','open'].includes(game.phase) && !afterDeal) || kept || opened;
     button.setAttribute('aria-label', `${i+1} 號牌${opened ? `，已開出 ${money(card.amount)} 元` : kept ? '，你的底牌' : ''}`);
     button.innerHTML = `<span class="corner" aria-hidden="true">${kept ? '♥' : '♠'}</span><span class="card-number">${String(i+1).padStart(2,'0')}</span>${opened ? `<span class="opened-value">${money(card.amount)}</span>` : `<span class="suit">${kept ? '你的牌' : '♠'}</span>`}`;
     button.onclick = () => choose(i); return button;
@@ -53,6 +54,7 @@ function render() {
   }
 }
 function choose(i) {
+  if (!gameStarted) return;
   const afterDeal = game.phase === 'finished' && game.result.kind === 'deal';
   if (!['choose','open'].includes(game.phase) && !afterDeal) return;
   pendingCard = i;
@@ -92,13 +94,22 @@ function renderScaleOptions() {
   });
   $('scale-preview').textContent = `金額範圍：NT$ ${money(Math.round(1000 * pendingScale))} ～ ${money(Math.round(10000 * pendingScale))}`;
 }
-function openReset() { pendingScale = game.scale; renderScaleOptions(); $('reset-dialog').showModal(); }
+function openReset() {
+  pendingScale = game.scale;
+  $('reset-title').textContent = gameStarted ? '重新洗牌？' : '選擇這局的金額';
+  $('reset-description').textContent = gameStarted ? '這局的進度會清除，18 筆金額重新隨機分配。' : '選好金額比例，就能開始挑選你的幸運牌。';
+  $('cancel-reset').hidden = !gameStarted;
+  $('confirm-reset').textContent = gameStarted ? '重新開始' : '開始遊戲';
+  renderScaleOptions(); $('reset-dialog').showModal();
+}
 document.querySelectorAll('[data-scale]').forEach(button => {
   button.onclick = () => { pendingScale = Number(button.dataset.scale); renderScaleOptions(); };
 });
 $('restart').onclick = openReset;
-$('cancel-reset').onclick = () => $('reset-dialog').close();
+$('cancel-reset').onclick = () => { if (gameStarted) $('reset-dialog').close(); };
+$('reset-dialog').addEventListener('cancel', event => { if (!gameStarted) event.preventDefault(); });
 function reset(scale) { game = createGame(Math.random,scale); pendingCard = null; modalMode = null; $('offer').value=''; $('offer-error').textContent=''; render(); window.scrollTo({top:0,behavior:'smooth'}); announce(`新的一局已洗牌，金額為 ${scale} 倍，請選你的底牌。`); }
-$('confirm-reset').onclick = () => { $('reset-dialog').close(); reset(pendingScale); };
+$('confirm-reset').onclick = () => { gameStarted = true; $('reset-dialog').close(); reset(pendingScale); };
 $('play-again').onclick = openReset;
 render();
+openReset();
