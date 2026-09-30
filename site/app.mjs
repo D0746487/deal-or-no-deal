@@ -44,12 +44,12 @@ function render() {
   }));
   $('board-count').textContent = choosing ? '18 張待選' : `已開 ${game.opened.length} / 17 張`;
   $('prize-count').textContent = `${18 - outPrizes.size} 筆剩餘`;
-  $('table-note').textContent = afterDeal ? '點開剩餘的牌查看金額，成交金額維持不變。' : finished ? '你的底牌金額已顯示在上方。' : '跟著現實抽到的號碼，點選對應的牌。';
+  $('table-note').textContent = afterDeal ? '已成交，仍可點開剩餘的牌查看金額。' : finished ? '你的底牌金額已顯示在上方。' : '跟著現實抽到的號碼，點選對應的牌。';
   $('offer-panel').hidden = game.phase !== 'offer'; $('result-panel').hidden = !finished;
   if (finished) {
     $('result-label').textContent = game.result.kind === 'deal' ? 'DEAL · 成交' : 'NO DEAL · 最後揭曉';
     $('result-title').textContent = game.result.kind === 'deal' ? '你接受了主持人的報價' : `${game.selected + 1} 號牌，是你的幸運牌`;
-    $('result-amount').textContent = `NT$ ${money(game.result.amount)}`;
+    $('result-amount').textContent = afterDeal ? 'DEAL!' : `NT$ ${money(game.result.amount)}`;
     $('result-note').textContent = game.result.kind === 'deal' ? `你的 ${game.selected + 1} 號底牌原本是 NT$ ${money(game.cards[game.selected].amount)}。` : '一路堅持到最後，這就是屬於你的金額。';
   }
 }
@@ -68,7 +68,7 @@ function choose(i) {
   if (!picking) {
     if (!selectCard(game,i)) return;
     $('dialog-amount').textContent = `NT$ ${money(game.cards[i].amount)}`;
-    $('dialog-note').textContent = afterDeal ? `你的成交金額仍是 NT$ ${money(game.result.amount)}。` : game.phase === 'offer' ? '本回合開牌完成，接著聽聽主持人的報價。' : game.phase === 'finished' ? '最後一張已開出，接著揭曉你的底牌！' : `這回合還要開 ${ROUNDS[game.round]-game.inRound} 張。`;
+    $('dialog-note').textContent = afterDeal ? '已成交，繼續揭曉剩下的牌。' : game.phase === 'offer' ? '本回合開牌完成，接著聽聽主持人的報價。' : game.phase === 'finished' ? '最後一張已開出，接著揭曉你的底牌！' : `這回合還要開 ${ROUNDS[game.round]-game.inRound} 張。`;
     render(); announce(`${i+1} 號牌開出 ${money(game.cards[i].amount)} 元`);
   }
   $('card-dialog').showModal();
@@ -81,13 +81,11 @@ $('dialog-confirm').onclick = () => {
   $('card-dialog').close();
 };
 $('card-dialog').addEventListener('close',() => { if (modalMode !== 'inspect') scrollToCurrent(); });
-$('no-deal').onclick = () => { if(noDeal(game)) { $('offer').value=''; $('offer-error').textContent=''; render(); $('board-title').scrollIntoView({block:'start',behavior:'smooth'}); announce(`No Deal！第 ${game.round+1} 回合，開 ${ROUNDS[game.round]} 張。`); } };
+$('no-deal').onclick = () => { if(noDeal(game)) { render(); $('board-title').scrollIntoView({block:'start',behavior:'smooth'}); announce(`No Deal！第 ${game.round+1} 回合，開 ${ROUNDS[game.round]} 張。`); } };
 $('deal').onclick = () => {
-  const raw = $('offer').value.trim().replace(/,/g,'');
-  if(!/^\d+$/.test(raw) || !deal(game,Number(raw))) { $('offer-error').textContent='請先輸入主持人的報價（0 或正整數）。'; $('offer').focus(); return; }
-  render(); scrollToCurrent(); announce(`成交！接受報價 ${money(game.result.amount)} 元。`);
+  if (!deal(game)) return;
+  render(); scrollToCurrent(); announce('成交！你接受了主持人的報價。');
 };
-$('offer').addEventListener('input',()=> { $('offer-error').textContent=''; });
 function renderScaleOptions() {
   document.querySelectorAll('[data-scale]').forEach(button => {
     button.setAttribute('aria-pressed', String(Number(button.dataset.scale) === pendingScale));
@@ -111,7 +109,7 @@ document.querySelectorAll('[data-scale]').forEach(button => {
 $('restart').onclick = openReset;
 $('cancel-reset').onclick = () => { if (gameStarted) $('reset-dialog').close(); };
 $('reset-dialog').addEventListener('cancel', event => { if (!gameStarted) event.preventDefault(); });
-function reset(scale) { game = createGame(Math.random,scale); pendingCard = null; modalMode = null; $('offer').value=''; $('offer-error').textContent=''; render(); window.scrollTo({top:0,behavior:'smooth'}); announce(`新的一局已洗牌，金額為 ${scale} 倍，請選你的底牌。`); }
+function reset(scale) { game = createGame(Math.random,scale); pendingCard = null; modalMode = null; render(); window.scrollTo({top:0,behavior:'smooth'}); announce(`新的一局已洗牌，金額為 ${scale} 倍，請選你的底牌。`); }
 $('confirm-reset').onclick = () => { gameStarted = true; $('reset-dialog').close(); reset(pendingScale); };
 $('play-again').onclick = openReset;
 render();

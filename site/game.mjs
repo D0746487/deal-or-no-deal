@@ -32,7 +32,7 @@ export function noDeal(game) {
   if (game.phase !== 'offer') return false;
   game.round++; game.inRound = 0; game.phase = 'open'; game.offer = null; return true;
 }
-export function deal(game, amount) {
-  if (game.phase !== 'offer' || !Number.isFinite(amount) || amount < 0 || !Number.isInteger(amount)) return false;
-  game.offer = amount; game.result = { kind: 'deal', amount }; game.phase = 'finished'; return true;
+export function deal(game) {
+  if (game.phase !== 'offer') return false;
+  game.result = { kind: 'deal' }; game.phase = 'finished'; return true;
 }

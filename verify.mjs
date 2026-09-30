@@ -18,8 +18,8 @@ for(let run=0;run<50;run++) {
   assert.equal(g.phase,'finished'); assert.equal(g.result.amount,g.cards[0].amount); assert.equal(g.opened.length,17);
 }
 const g = createGame(); selectCard(g,17); for(let i=0;i<5;i++)selectCard(g,i);
-assert.equal(deal(g,NaN),false); assert.equal(deal(g,-1),false); assert.equal(deal(g,1.5),false);
-assert.equal(deal(g,4200),true); assert.equal(g.result.amount,4200); assert.equal(noDeal(g),false);
+assert.equal(deal(createGame()),false);
+assert.equal(deal(g),true); assert.deepEqual(g.result,{kind:'deal'}); assert.equal(noDeal(g),false); assert.equal(deal(g),false);
 const settled = { ...g.result }, settledRound = g.round, settledCount = g.inRound;
 for (let i=5;i<17;i++) {
   assert.equal(selectCard(g,i),true); assert.equal(selectCard(g,i),false);
@@ -36,11 +36,11 @@ for (const scale of SCALES) {
   assert.equal(Math.max(...scaled.amounts),10000*scale);
   assert.equal(scaled.amounts.filter(amount=>amount===1000*scale).length,6);
   selectCard(scaled,17); for(let i=0;i<5;i++)selectCard(scaled,i);
-  deal(scaled,777); assert.equal(scaled.result.amount,777);
+  assert.equal(deal(scaled),true); assert.deepEqual(scaled.result,{kind:'deal'});
   selectCard(scaled,5); assert.equal(scaled.cards[5].amount,1000*scale);
 }
 assert.equal(createGame().scale,1);
 assert.throws(()=>createGame(Math.random,0.3),RangeError);
 assert.deepEqual(createGame(()=>.999,1).amounts,AMOUNTS);
-console.log('Passed: 50 complete games across all four scales, amount distribution, duplicate prizes, Deal settlement, unchanged manual offers, and post-Deal reveals.');
+console.log('Passed: 50 complete games across all four scales, amount distribution, duplicate prizes, direct Deal without amount, and post-Deal reveals.');
 
