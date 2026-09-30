@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101b19">
+  <meta name="description" content="兩個人的 Deal or No Deal。18 張牌、七個回合，每局隨機分配金額。">
+  <title>Deal or No Deal · 兩個人的遊戲</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23101b19'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-size='46' fill='%23eecb85'%3E%E2%99%A0%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Deal or No Deal 首頁"><span class="brand-mark" aria-hidden="true">♠</span><span>THE TWO OF US<span class="brand-sub">兩個人的遊戲</span></span></a>
+      <button id="restart" class="quiet-button">重新開始</button>
+    </header>
+    <main>
+      <div class="title-row"><div><p class="eyebrow">18 張牌．7 個回合．一個決定</p><h1>DEAL <span>or</span> NO DEAL</h1></div><span class="edition">COUPLE’S<br>EDITION</span></div>
+      <section class="status-panel" aria-label="遊戲進度">
+        <div class="status-main"><span id="phase-label" class="phase-label">先選一張</span><h2 id="instruction">哪一張，是你的幸運牌？</h2><p id="detail">選一張留到最後，其餘的牌將逐一揭曉。</p></div>
+        <div class="your-card" id="your-card"><span>你的底牌</span><strong id="selected-number">?</strong><small id="selected-caption">等待選擇</small></div>
+        <div id="rounds" class="rounds" aria-label="七回合開牌數量"></div>
+      </section>
+      <div class="game-layout">
+        <section class="board" aria-labelledby="board-title"><div class="section-head"><h3 id="board-title">幸運牌桌</h3><span id="board-count">18 張待選</span></div><div class="card-grid" id="cards"></div><p class="table-note" id="table-note">跟著現實抽到的號碼，點選對應的牌。</p></section>
+        <aside class="prizes" aria-labelledby="prize-title"><div class="section-head"><h3 id="prize-title">金額表</h3><span id="prize-count">18 筆</span></div><div id="prize-list" class="prize-list"></div><p class="prize-note">灰色＝已開出</p></aside>
+      </div>
+      <section id="offer-panel" class="offer-panel" hidden><div><p class="eyebrow">主持人的報價</p><h2>這個數字，值得收下嗎？</h2><p>聽完報價，決定帶走金額或繼續開牌。</p></div><div class="offer-controls"><label for="offer">輸入現實中的報價</label><div class="amount-input"><span>NT$</span><input id="offer" type="text" inputmode="numeric" placeholder="輸入金額" autocomplete="off" maxlength="9"></div><p id="offer-error" class="error" role="alert"></p><div class="decision-buttons"><button id="deal" class="primary-button">DEAL <span>接受報價</span></button><button id="no-deal" class="outline-button">NO DEAL <span>繼續挑戰</span></button></div></div></section>
+      <section id="result-panel" class="result-panel" hidden><p class="eyebrow" id="result-label">最後揭曉</p><h2 id="result-title"></h2><div id="result-amount" class="result-amount"></div><p id="result-note"></p><button id="play-again" class="primary-button">再玩一局</button></section>
+    </main>
+    <footer>一起選牌，也一起享受未知。<span>♠ ♥ ♣ ♦</span></footer>
+  </div>
+  <dialog id="card-dialog" class="card-dialog"><form method="dialog"><button class="dialog-x" aria-label="關閉">×</button></form><p id="dialog-label" class="eyebrow"></p><div id="dialog-number" class="reveal-number"></div><h2 id="dialog-title"></h2><div id="dialog-amount" class="dialog-amount"></div><p id="dialog-note"></p><button id="dialog-confirm" class="primary-button"></button></dialog>
+  <dialog id="reset-dialog" class="reset-dialog"><p class="eyebrow">新的一局</p><h2>重新洗牌？</h2><p>這局的進度會清除，18 筆金額重新隨機分配。</p><div class="decision-buttons"><button id="cancel-reset" class="outline-button">繼續這局</button><button id="confirm-reset" class="primary-button">重新開始</button></div></dialog>
+  <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>
