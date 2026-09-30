@@ -100,7 +100,10 @@ function openReset() {
   $('reset-description').textContent = gameStarted ? '這局的進度會清除，18 筆金額重新隨機分配。' : '選好金額比例，就能開始挑選你的幸運牌。';
   $('cancel-reset').hidden = !gameStarted;
   $('confirm-reset').textContent = gameStarted ? '重新開始' : '開始遊戲';
-  renderScaleOptions(); $('reset-dialog').showModal();
+  renderScaleOptions();
+  $('reset-title').tabIndex = -1;
+  $('reset-dialog').showModal();
+  $('reset-title').focus({ preventScroll: true });
 }
 document.querySelectorAll('[data-scale]').forEach(button => {
   button.onclick = () => { pendingScale = Number(button.dataset.scale); renderScaleOptions(); };
