@@ -3,3 +3,13 @@
 
 /* Keep the focus indicator around the whole amount field. */
 .offer-controls{min-width:0}.amount-input{min-width:0}.amount-input span{flex:0 0 auto;white-space:nowrap;padding-right:8px}.amount-input input{flex:1 1 0;width:0;min-width:0;outline:none;box-shadow:none}.amount-input input:focus-visible{outline:none;box-shadow:none}.amount-input:focus-within{border-color:var(--gold);outline:2px solid var(--gold);outline-offset:3px}
+
+/* Keep small and large prizes in fixed side-by-side columns. */
+.prize-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.prize-column{display:grid;gap:7px;min-width:0}
+.prize-column h4{margin:0 0 2px;text-align:center;font-size:14px;font-weight:500;color:var(--gold)}
+.prize-column.low h4,.prize-column.low .prize:not(.out){color:var(--green)}
+.prize .value{white-space:nowrap}
+@media(max-width:800px){.prize{padding:6px}.prize .prize-dot{display:none}.prize .value{width:100%;text-align:right}}
+@media(max-width:480px){.game-layout{grid-template-columns:minmax(0,1fr) minmax(136px,42%);gap:12px}.prize-list{gap:6px}.prize-column{gap:6px}.prize{padding:7px 5px}.prize-column h4{font-size:14px}.prize-note{margin-top:12px}}
+@media(max-width:360px){.game-layout{grid-template-columns:minmax(0,1fr) 136px;gap:10px}}

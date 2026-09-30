@@ -27,10 +27,20 @@ function render() {
   }));
   const outPrizes = new Set(game.opened.map(i => game.cards[i].prize));
   if (finished) outPrizes.add(game.cards[game.selected].prize);
-  $('prize-list').replaceChildren(...AMOUNTS.map((amount, i) => {
-    const item = document.createElement('div'); item.className = `prize ${outPrizes.has(i) ? 'out' : ''}`;
-    item.setAttribute('aria-label', `${money(amount)} 元${outPrizes.has(i) ? '，已開出' : '，未開出'}`);
-    item.innerHTML = `<span class="prize-dot" aria-hidden="true">◆</span><span class="value">${money(amount)}</span>`; return item;
+  const sortedPrizes = AMOUNTS.map((amount, prize) => ({ amount, prize })).sort((a,b) => a.amount-b.amount);
+  $('prize-list').replaceChildren(...[sortedPrizes.slice(0,9), sortedPrizes.slice(9)].map((prizes, columnIndex) => {
+    const column = document.createElement('section');
+    column.className = `prize-column ${columnIndex === 0 ? 'low' : 'high'}`;
+    const heading = document.createElement('h4');
+    heading.textContent = columnIndex === 0 ? '小金額' : '大金額';
+    column.setAttribute('aria-label', heading.textContent);
+    column.append(heading, ...prizes.map(({ amount, prize }) => {
+      const item = document.createElement('div'); item.className = `prize ${outPrizes.has(prize) ? 'out' : ''}`;
+      item.setAttribute('aria-label', `${money(amount)} 元${outPrizes.has(prize) ? '，已開出' : '，未開出'}`);
+      item.innerHTML = `<span class="prize-dot" aria-hidden="true">◆</span><span class="value">${money(amount)}</span>`;
+      return item;
+    }));
+    return column;
   }));
   $('board-count').textContent = choosing ? '18 張待選' : `已開 ${game.opened.length} / 17 張`;
   $('prize-count').textContent = `${18 - outPrizes.size} 筆剩餘`;
