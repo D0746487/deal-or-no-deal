@@ -13,7 +13,7 @@
   <div class="app">
     <header class="topbar">
       <a class="brand" href="./" aria-label="Deal or No Deal 首頁"><span class="brand-mark" aria-hidden="true">♠</span><span>THE TWO OF US<span class="brand-sub">兩個人的遊戲</span></span></a>
-      <button id="restart" class="quiet-button">重新開始</button>
+      <div class="topbar-actions"><button id="animation-toggle" class="quiet-button" type="button" role="switch" aria-checked="true">開牌動畫：開</button><button id="restart" class="quiet-button">重新開始</button></div>
     </header>
     <main>
       <div class="title-row"><div><p class="eyebrow">18 張牌．7 個回合．一個決定</p><h1>DEAL <span>or</span> NO DEAL</h1></div><span class="edition">COUPLE’S<br>EDITION</span></div>
@@ -24,14 +24,14 @@
       </section>
       <div class="game-layout">
         <section class="board" aria-labelledby="board-title"><div class="section-head"><h3 id="board-title">幸運牌桌</h3><span id="board-count">18 張待選</span></div><div class="card-grid" id="cards"></div><p class="table-note" id="table-note">跟著現實抽到的號碼，點選對應的牌。</p></section>
-        <aside class="prizes" aria-labelledby="prize-title"><div class="section-head"><h3 id="prize-title">金額表</h3><span id="prize-count">18 筆</span></div><div id="prize-list" class="prize-list"></div><p class="prize-note">灰色＝已開出</p></aside>
+        <aside class="prizes" aria-labelledby="prize-title"><div class="section-head"><h3 id="prize-title">金額表</h3><span id="prize-count">18 筆</span></div><div id="prize-list" class="prize-list"></div><div class="expectation"><span>剩餘金額期望值</span><strong id="expected-value">—</strong><small id="expected-note">未揭曉金額的平均，含底牌</small></div><p class="prize-note">灰色＝已開出</p></aside>
       </div>
       <section id="offer-panel" class="offer-panel" hidden><div><p class="eyebrow">主持人的報價</p><h2>接受，還是繼續？</h2><p>聽完報價，做出你的決定。</p></div><div class="decision-buttons"><button id="deal" class="primary-button">DEAL <span>接受報價</span></button><button id="no-deal" class="outline-button">NO DEAL <span>繼續挑戰</span></button></div></section>
       <section id="result-panel" class="result-panel" hidden><p class="eyebrow" id="result-label">最後揭曉</p><h2 id="result-title"></h2><div id="result-amount" class="result-amount"></div><p id="result-note"></p><button id="play-again" class="primary-button">再玩一局</button></section>
     </main>
     <footer>一起選牌，也一起享受未知。<span>♠ ♥ ♣ ♦</span></footer>
   </div>
-  <dialog id="card-dialog" class="card-dialog"><form method="dialog"><button class="dialog-x" aria-label="關閉">×</button></form><p id="dialog-label" class="eyebrow"></p><div id="dialog-number" class="reveal-number"></div><h2 id="dialog-title"></h2><div id="dialog-amount" class="dialog-amount"></div><p id="dialog-note"></p><button id="dialog-confirm" class="primary-button"></button></dialog>
+  <dialog id="card-dialog" class="card-dialog"><form method="dialog"><button class="dialog-x" aria-label="關閉">×</button></form><p id="dialog-label" class="eyebrow"></p><div id="dialog-number" class="reveal-number"></div><h2 id="dialog-title"></h2><div id="reveal-stage" class="reveal-stage"><div id="dialog-amount" class="dialog-amount"></div><div id="paper-cover" class="paper-cover" hidden><span class="paper-message">藏著你的下一個驚喜</span><button id="paper-edge" class="paper-edge" type="button" aria-label="按住往左拖開紙張；使用鍵盤可按 Enter 揭曉"><span aria-hidden="true">‹</span><small>按住拖開</small></button></div></div><p id="dialog-note"></p><button id="dialog-confirm" class="primary-button"></button></dialog>
   <dialog id="reset-dialog" class="reset-dialog"><p class="eyebrow">新的一局</p><h2 id="reset-title">選擇這局的金額</h2><p id="reset-description">選好金額比例，就能開始挑選你的幸運牌。</p><fieldset class="scale-picker"><legend>金額比例</legend><div class="scale-options"><button type="button" data-scale="0.1" aria-pressed="false">0.1 倍</button><button type="button" data-scale="0.2" aria-pressed="false">0.2 倍</button><button type="button" data-scale="0.5" aria-pressed="false">0.5 倍</button><button type="button" data-scale="1" aria-pressed="true">1 倍</button></div></fieldset><p id="scale-preview" class="scale-preview" aria-live="polite">金額範圍：NT$ 1,000 ～ 10,000</p><div class="decision-buttons"><button id="cancel-reset" class="outline-button">繼續這局</button><button id="confirm-reset" class="primary-button">重新開始</button></div></dialog>
   <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <script type="module" src="app.mjs"></script>

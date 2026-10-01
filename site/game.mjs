@@ -1,6 +1,10 @@
 export const AMOUNTS = [1000,1000,1000,1000,1000,1000,1500,2000,2500,3000,4000,5000,6000,7000,8000,10000,10000,10000];
 export const ROUNDS = [5,4,3,2,1,1,1];
 export const SCALES = [0.1,0.2,0.5,1];
+export function remainingExpectedValue(game) {
+  const remaining = game.cards.filter((card, index) => !game.opened.includes(index) && !(game.phase === 'finished' && index === game.selected));
+  return remaining.length ? remaining.reduce((sum, card) => sum + card.amount, 0) / remaining.length : null;
+}
 export function createGame(random = Math.random, scale = 1) {
   if (!SCALES.includes(scale)) throw new RangeError('Unsupported amount scale');
   const amounts = AMOUNTS.map(amount => Math.round(amount * scale));

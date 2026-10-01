@@ -19,3 +19,16 @@
 .scale-options button{min-height:48px;padding:10px 4px;border:1px solid #819178;border-radius:8px;background:transparent;color:var(--white);font-size:14px;white-space:nowrap}
 .scale-options button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#1d2c22;font-weight:700}
 .reset-dialog .scale-preview{color:var(--gold);margin:12px 0 20px;font-variant-numeric:tabular-nums}
+
+.topbar{gap:12px;flex-wrap:wrap}.topbar-actions{display:flex;gap:8px;align-items:center}.topbar-actions .quiet-button{white-space:nowrap}
+#animation-toggle[aria-checked="true"]{border-color:#a48d5f;color:var(--gold)}
+.expectation{margin-top:16px;padding:12px 10px;border:1px solid #66764f;background:#24352a;border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.expectation>span{font-size:14px;color:var(--muted)}.expectation strong{font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums;line-height:1.4;overflow-wrap:anywhere}.expectation small{font-size:12px;color:var(--muted);line-height:1.6}
+.reveal-stage{height:160px;margin:16px 0;position:relative;overflow:hidden;border:1px solid #627052;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#142219}
+.reveal-stage .dialog-amount{font-size:clamp(30px,7vw,44px);padding:12px}
+.paper-cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-right:55px;background:linear-gradient(100deg,#f2dfb8,#f8edce 80%,#e4c995);color:#42513a;box-shadow:8px 0 16px #0005;transition:transform .25s ease;transform-origin:right center;user-select:none}
+.paper-cover.dragging{transition:none}.paper-cover.peeled{transform:translateX(-110%) rotate(-4deg);pointer-events:none}
+.paper-message{font-size:14px;letter-spacing:1px;padding:20px;line-height:1.8}
+.paper-edge{position:absolute;inset:0 0 0 auto;width:58px;border:0;border-left:1px dashed #ab9468;background:#d7b47b55;color:#35422e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;touch-action:none;cursor:grab}
+.paper-edge:active{cursor:grabbing}.paper-edge>span{font-size:38px;line-height:1}.paper-edge small{font-size:12px;writing-mode:vertical-rl;letter-spacing:2px}.paper-edge:focus-visible{outline:2px solid #485a3c;outline-offset:-5px}
+@media(max-width:480px){.topbar-actions{margin-left:auto}.topbar-actions .quiet-button{padding:8px;font-size:12px}.expectation{padding:10px 8px}.expectation strong{font-size:18px}.expectation>span{font-size:14px}}

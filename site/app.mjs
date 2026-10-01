@@ -1,4 +1,4 @@
-import { ROUNDS, createGame, selectCard, noDeal, deal } from './game.mjs';
+import { ROUNDS, createGame, selectCard, noDeal, deal, remainingExpectedValue } from './game.mjs';
 const $ = id => document.getElementById(id);
 const money = n => n.toLocaleString('zh-TW');
 let game = createGame();
@@ -6,6 +6,9 @@ let pendingCard = null;
 let modalMode = null;
 let pendingScale = game.scale;
 let gameStarted = false;
+let animationEnabled = true;
+let awaitingReveal = false;
+let drag = null;
 function announce(text) { $('announcement').textContent = text; }
 function render() {
   const choosing = game.phase === 'choose', finished = game.phase === 'finished';
@@ -44,6 +47,9 @@ function render() {
   }));
   $('board-count').textContent = choosing ? '18 張待選' : `已開 ${game.opened.length} / 17 張`;
   $('prize-count').textContent = `${18 - outPrizes.size} 筆剩餘`;
+  const expectation = remainingExpectedValue(game);
+  $('expected-value').textContent = expectation === null ? '—' : `NT$ ${expectation.toLocaleString('zh-TW',{maximumFractionDigits:0})}`;
+  $('expected-note').textContent = expectation === null ? '所有金額已揭曉' : finished ? '未揭曉金額的平均' : '未揭曉金額的平均，含底牌';
   $('table-note').textContent = afterDeal ? '已成交，仍可點開剩餘的牌查看金額。' : finished ? '你的底牌金額已顯示在上方。' : '跟著現實抽到的號碼，點選對應的牌。';
   $('offer-panel').hidden = game.phase !== 'offer'; $('result-panel').hidden = !finished;
   if (finished) {
@@ -65,14 +71,66 @@ function choose(i) {
   $('dialog-amount').textContent = '';
   $('dialog-note').textContent = picking ? '確認後，這張牌的金額會保持秘密。' : '';
   $('dialog-confirm').textContent = picking ? '就是這張！' : '繼續';
-  if (!picking) {
-    if (!selectCard(game,i)) return;
-    $('dialog-amount').textContent = `NT$ ${money(game.cards[i].amount)}`;
-    $('dialog-note').textContent = afterDeal ? '已成交，繼續揭曉剩下的牌。' : game.phase === 'offer' ? '本回合開牌完成，接著聽聽主持人的報價。' : game.phase === 'finished' ? '最後一張已開出，接著揭曉你的底牌！' : `這回合還要開 ${ROUNDS[game.round]-game.inRound} 張。`;
-    render(); announce(`${i+1} 號牌開出 ${money(game.cards[i].amount)} 元`);
-  }
+  awaitingReveal = !picking && animationEnabled;
+  drag = null;
+  $('reveal-stage').hidden = picking;
+  $('paper-cover').hidden = !awaitingReveal;
+  $('paper-edge').disabled = false;
+  $('paper-cover').classList.remove('peeled','dragging');
+  $('paper-cover').style.transform = '';
+  $('dialog-confirm').hidden = awaitingReveal;
+  if (awaitingReveal) $('dialog-note').textContent = '按住紙張右側邊緣，往左拖開。';
+  else if (!picking && !revealPendingCard()) return;
   $('card-dialog').showModal();
+  if (awaitingReveal) $('paper-edge').focus({preventScroll:true});
 }
+function revealPendingCard() {
+  if (!selectCard(game,pendingCard)) return false;
+  awaitingReveal = false;
+  $('dialog-amount').textContent = `NT$ ${money(game.cards[pendingCard].amount)}`;
+  $('dialog-note').textContent = modalMode === 'inspect' ? '已成交，繼續揭曉剩下的牌。' : game.phase === 'offer' ? '本回合開牌完成，接著聽聽主持人的報價。' : game.phase === 'finished' ? '最後一張已開出，接著揭曉你的底牌！' : `這回合還要開 ${ROUNDS[game.round]-game.inRound} 張。`;
+  $('dialog-confirm').hidden = false;
+  render(); announce(`${pendingCard+1} 號牌開出 ${money(game.cards[pendingCard].amount)} 元`);
+  return true;
+}
+function finishPeel() {
+  if (!awaitingReveal || !revealPendingCard()) return;
+  drag = null;
+  $('paper-cover').classList.remove('dragging');
+  $('paper-cover').classList.add('peeled');
+  $('paper-cover').style.transform = '';
+  $('paper-edge').disabled = true;
+  $('dialog-confirm').focus({preventScroll:true});
+}
+$('paper-edge').addEventListener('pointerdown',event => {
+  if (!awaitingReveal || (event.pointerType === 'mouse' && event.button !== 0)) return;
+  event.preventDefault();
+  drag = { id: event.pointerId, x: event.clientX, width: $('reveal-stage').getBoundingClientRect().width };
+  $('paper-edge').setPointerCapture(event.pointerId);
+  $('paper-cover').classList.add('dragging');
+});
+$('paper-edge').addEventListener('pointermove',event => {
+  if (!drag || drag.id !== event.pointerId) return;
+  const progress = Math.max(0,Math.min(1,(drag.x-event.clientX)/drag.width));
+  $('paper-cover').style.transform = `translateX(${-progress*100}%) rotate(${-progress*4}deg)`;
+  if (progress >= .7) finishPeel();
+});
+function cancelPeel() {
+  drag = null;
+  $('paper-cover').classList.remove('dragging');
+  if (awaitingReveal) $('paper-cover').style.transform = '';
+}
+$('paper-edge').addEventListener('pointerup',cancelPeel);
+$('paper-edge').addEventListener('pointercancel',cancelPeel);
+$('paper-edge').addEventListener('lostpointercapture',cancelPeel);
+$('paper-edge').addEventListener('keydown',event => {
+  if (['Enter',' ','ArrowLeft'].includes(event.key)) { event.preventDefault(); finishPeel(); }
+});
+$('animation-toggle').onclick = () => {
+  animationEnabled = !animationEnabled;
+  $('animation-toggle').setAttribute('aria-checked',String(animationEnabled));
+  $('animation-toggle').textContent = `開牌動畫：${animationEnabled ? '開' : '關'}`;
+};
 function scrollToCurrent() {
   if (game.phase === 'offer' || game.phase === 'finished') $(game.phase === 'offer' ? 'offer-panel' : 'result-panel').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block:'center'});
 }
@@ -80,7 +138,10 @@ $('dialog-confirm').onclick = () => {
   if (modalMode === 'pick') { selectCard(game,pendingCard); render(); announce(`已保留 ${pendingCard+1} 號牌。第一回合開五張。`); }
   $('card-dialog').close();
 };
-$('card-dialog').addEventListener('close',() => { if (modalMode !== 'inspect') scrollToCurrent(); });
+$('card-dialog').addEventListener('close',() => {
+  awaitingReveal = false; cancelPeel();
+  if (modalMode !== 'inspect') scrollToCurrent();
+});
 $('no-deal').onclick = () => { if(noDeal(game)) { render(); $('board-title').scrollIntoView({block:'start',behavior:'smooth'}); announce(`No Deal！第 ${game.round+1} 回合，開 ${ROUNDS[game.round]} 張。`); } };
 $('deal').onclick = () => {
   if (!deal(game)) return;
