@@ -1,4 +1,5 @@
 import { ROUNDS, createGame, selectCard, noDeal, deal, remainingExpectedValue } from './game.mjs';
+import { peelGeometry, polygonCSS } from './peel.mjs';
 const $ = id => document.getElementById(id);
 const money = n => n.toLocaleString('zh-TW');
 let game = createGame();
@@ -9,6 +10,7 @@ let gameStarted = false;
 let animationEnabled = true;
 let awaitingReveal = false;
 let drag = null;
+let peeked = false;
 function announce(text) { $('announcement').textContent = text; }
 function render() {
   const choosing = game.phase === 'choose', finished = game.phase === 'finished';
@@ -72,14 +74,25 @@ function choose(i) {
   $('dialog-note').textContent = picking ? '確認後，這張牌的金額會保持秘密。' : '';
   $('dialog-confirm').textContent = picking ? '就是這張！' : '繼續';
   awaitingReveal = !picking && animationEnabled;
+  peeked = false;
   drag = null;
   $('reveal-stage').hidden = picking;
   $('paper-cover').hidden = !awaitingReveal;
   $('paper-edge').disabled = false;
+  $('paper-edge').hidden = !awaitingReveal;
+  $('paper-fold').hidden = true;
   $('paper-cover').classList.remove('peeled','dragging');
   $('paper-cover').style.transform = '';
+  $('paper-cover').style.clipPath = '';
+  $('paper-fold').classList.remove('peeled','dragging');
+  $('dialog-amount').removeAttribute('aria-hidden');
+  $('dialog-amount').style.filter = '';
   $('dialog-confirm').hidden = awaitingReveal;
-  if (awaitingReveal) $('dialog-note').textContent = '按住紙張右側邊緣，往左拖開。';
+  if (awaitingReveal) {
+    $('dialog-amount').textContent = `NT$ ${money(game.cards[i].amount)}`;
+    $('dialog-amount').setAttribute('aria-hidden','true');
+    $('dialog-note').textContent = '按住紙張任一邊或角落，往任意方向慢慢抿開。';
+  }
   else if (!picking && !revealPendingCard()) return;
   $('card-dialog').showModal();
   if (awaitingReveal) $('paper-edge').focus({preventScroll:true});
@@ -87,6 +100,8 @@ function choose(i) {
 function revealPendingCard() {
   if (!selectCard(game,pendingCard)) return false;
   awaitingReveal = false;
+  $('dialog-amount').removeAttribute('aria-hidden');
+  $('dialog-amount').style.filter = '';
   $('dialog-amount').textContent = `NT$ ${money(game.cards[pendingCard].amount)}`;
   $('dialog-note').textContent = modalMode === 'inspect' ? '已成交，繼續揭曉剩下的牌。' : game.phase === 'offer' ? '本回合開牌完成，接著聽聽主持人的報價。' : game.phase === 'finished' ? '最後一張已開出，接著揭曉你的底牌！' : `這回合還要開 ${ROUNDS[game.round]-game.inRound} 張。`;
   $('dialog-confirm').hidden = false;
@@ -98,33 +113,49 @@ function finishPeel() {
   drag = null;
   $('paper-cover').classList.remove('dragging');
   $('paper-cover').classList.add('peeled');
+  $('paper-fold').classList.remove('dragging');
+  $('paper-fold').classList.add('peeled');
   $('paper-cover').style.transform = '';
   $('paper-edge').disabled = true;
+  $('paper-edge').hidden = true;
   $('dialog-confirm').focus({preventScroll:true});
 }
 $('paper-edge').addEventListener('pointerdown',event => {
   if (!awaitingReveal || (event.pointerType === 'mouse' && event.button !== 0)) return;
   event.preventDefault();
-  drag = { id: event.pointerId, x: event.clientX, width: $('reveal-stage').getBoundingClientRect().width };
+  const bounds=$('reveal-stage').getBoundingClientRect();
+  drag = { id: event.pointerId, x: event.clientX, y:event.clientY, width:bounds.width, height:bounds.height };
   $('paper-edge').setPointerCapture(event.pointerId);
   $('paper-cover').classList.add('dragging');
+  $('paper-fold').classList.add('dragging');
 });
 $('paper-edge').addEventListener('pointermove',event => {
   if (!drag || drag.id !== event.pointerId) return;
-  const progress = Math.max(0,Math.min(1,(drag.x-event.clientX)/drag.width));
-  $('paper-cover').style.transform = `translateX(${-progress*100}%) rotate(${-progress*4}deg)`;
-  if (progress >= .7) finishPeel();
+  const geometry=peelGeometry(drag.width,drag.height,event.clientX-drag.x,event.clientY-drag.y);
+  $('paper-cover').style.clipPath=polygonCSS(geometry.cover,drag.width,drag.height);
+  $('paper-fold').style.clipPath=polygonCSS(geometry.fold,drag.width,drag.height);
+  $('paper-fold').style.background=`linear-gradient(${geometry.angle+90}deg,#c0a471,#fbefd1 28%,#e6cfa4 70%,#9b835b)`;
+  $('paper-fold').hidden = geometry.progress < .005;
+  $('dialog-amount').style.filter=`blur(${(1-geometry.progress)*1.2}px)`;
+  if(geometry.progress>.01) { peeked=true; $('paper-edge').classList.add('in-motion'); }
+  if (geometry.progress >= .72) finishPeel();
 });
 function cancelPeel() {
   drag = null;
   $('paper-cover').classList.remove('dragging');
-  if (awaitingReveal) $('paper-cover').style.transform = '';
+  $('paper-fold').classList.remove('dragging');
+  $('paper-edge').classList.remove('in-motion');
+  if (awaitingReveal) {
+    $('paper-cover').style.clipPath = '';
+    $('paper-fold').hidden=true;
+    $('dialog-amount').style.filter='';
+  }
 }
 $('paper-edge').addEventListener('pointerup',cancelPeel);
 $('paper-edge').addEventListener('pointercancel',cancelPeel);
 $('paper-edge').addEventListener('lostpointercapture',cancelPeel);
 $('paper-edge').addEventListener('keydown',event => {
-  if (['Enter',' ','ArrowLeft'].includes(event.key)) { event.preventDefault(); finishPeel(); }
+  if (['Enter',' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) { event.preventDefault(); finishPeel(); }
 });
 $('animation-toggle').onclick = () => {
   animationEnabled = !animationEnabled;
@@ -139,6 +170,7 @@ $('dialog-confirm').onclick = () => {
   $('card-dialog').close();
 };
 $('card-dialog').addEventListener('close',() => {
+  if (awaitingReveal && peeked) revealPendingCard();
   awaitingReveal = false; cancelPeel();
   if (modalMode !== 'inspect') scrollToCurrent();
 });

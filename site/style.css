@@ -32,3 +32,14 @@
 .paper-edge{position:absolute;inset:0 0 0 auto;width:58px;border:0;border-left:1px dashed #ab9468;background:#d7b47b55;color:#35422e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;touch-action:none;cursor:grab}
 .paper-edge:active{cursor:grabbing}.paper-edge>span{font-size:38px;line-height:1}.paper-edge small{font-size:12px;writing-mode:vertical-rl;letter-spacing:2px}.paper-edge:focus-visible{outline:2px solid #485a3c;outline-offset:-5px}
 @media(max-width:480px){.topbar-actions{margin-left:auto}.topbar-actions .quiet-button{padding:8px;font-size:12px}.expectation{padding:10px 8px}.expectation strong{font-size:18px}.expectation>span{font-size:14px}}
+
+/* The peeled part reflects across a moving crease, showing the paper's back. */
+.paper-cover{padding:0;box-shadow:none;transform:none;transition:clip-path .22s ease,opacity .25s ease;will-change:clip-path}
+.paper-cover.dragging{transition:none}.paper-cover.peeled{transform:none;opacity:0;pointer-events:none}
+.paper-fold{position:absolute;inset:0;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 5px #0009);transition:opacity .25s ease;will-change:clip-path}
+.paper-fold.peeled{opacity:0}
+.paper-message{max-width:75%;text-align:center;font-size:14px;letter-spacing:2px}
+.paper-edge{inset:0;width:100%;height:100%;z-index:3;border:0;background:transparent;display:flex;justify-content:flex-end;padding:12px;touch-action:none}
+.paper-edge small{writing-mode:horizontal-tb;letter-spacing:1px;color:#526047;background:#f6e8c888;padding:4px 8px;border-radius:4px;font-size:12px;transition:opacity .15s}
+.paper-edge.in-motion small{opacity:0}
+.reveal-stage .dialog-amount{user-select:none;transition:filter .08s linear}

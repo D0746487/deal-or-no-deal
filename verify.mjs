@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { peelGeometry, polygonCSS } from './site/peel.mjs';
 import { AMOUNTS, ROUNDS, SCALES, createGame, selectCard, noDeal, deal, remainingExpectedValue } from './site/game.mjs';
 const sorted = a => [...a].sort((x,y)=>x-y);
 assert.equal(AMOUNTS.length,18); assert.equal(ROUNDS.reduce((a,b)=>a+b),17);
@@ -58,5 +59,20 @@ for (const scale of SCALES) {
   for(let i=4;i<16;i++)selectCard(expected,i);
   assert.equal(remainingExpectedValue(expected),null);
 }
-console.log('Passed: 50 complete games across all four scales, duplicate prizes, direct Deal, post-Deal reveals, and remaining expected values including the hidden kept card.');
+const area = points => Math.abs(points.reduce((sum,p,i)=>{ const q=points[(i+1)%points.length]; return sum+p[0]*q[1]-p[1]*q[0]; },0)/2);
+for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) {
+  let previous=320*160;
+  for(const distance of [0,20,60,120,200,400,600]) {
+    const peel=peelGeometry(320,160,dx*distance,dy*distance);
+    assert.ok(peel.progress>=0 && peel.progress<=1);
+    assert.ok(area(peel.cover)<=previous+.001);
+    previous=area(peel.cover);
+    assert.ok([...peel.cover,...peel.fold].every(p=>p.every(Number.isFinite)));
+    assert.ok(polygonCSS(peel.cover,320,160).startsWith('polygon('));
+  }
+  assert.ok(previous<.001);
+}
+assert.equal(area(peelGeometry(320,160,80,0).cover),320*160*.75);
+assert.equal(area(peelGeometry(320,160,0,-40).cover),320*160*.75);
+console.log('Passed: game rounds and scales, remaining expected values, and progressively revealed paper geometry in all eight directions.');
 
