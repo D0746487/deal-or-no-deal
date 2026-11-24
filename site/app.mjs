@@ -1,4 +1,4 @@
-import { ROUNDS, createGame, selectCard, noDeal, deal, remainingExpectedValue } from './game.mjs';
+import { AMOUNTS, ROUNDS, createGame, selectCard, noDeal, deal, remainingExpectedValue } from './game.mjs';
 import { peelGeometry, polygonCSS } from './peel.mjs';
 const $ = id => document.getElementById(id);
 const money = n => n.toLocaleString('zh-TW');
@@ -183,7 +183,7 @@ function renderScaleOptions() {
   document.querySelectorAll('[data-scale]').forEach(button => {
     button.setAttribute('aria-pressed', String(Number(button.dataset.scale) === pendingScale));
   });
-  $('scale-preview').textContent = `金額範圍：NT$ ${money(Math.round(1000 * pendingScale))} ～ ${money(Math.round(10000 * pendingScale))}`;
+  $('scale-preview').textContent = `金額範圍：NT$ ${money(Math.round(Math.min(...AMOUNTS) * pendingScale))} ～ ${money(Math.round(Math.max(...AMOUNTS) * pendingScale))}`;
 }
 function openReset() {
   pendingScale = game.scale;

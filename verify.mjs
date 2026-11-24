@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { peelGeometry, polygonCSS } from './site/peel.mjs';
 import { AMOUNTS, ROUNDS, SCALES, createGame, selectCard, noDeal, deal, remainingExpectedValue } from './site/game.mjs';
 const sorted = a => [...a].sort((x,y)=>x-y);
-assert.equal(AMOUNTS.length,18); assert.equal(ROUNDS.reduce((a,b)=>a+b),17);
+assert.equal(AMOUNTS.filter(x=>x===500).length,5); assert.equal(AMOUNTS.filter(x=>x===1000).length,1); assert.equal(AMOUNTS.filter(x=>x===9000).length,1); assert.equal(AMOUNTS.filter(x=>x===10000).length,2); assert.equal(AMOUNTS.length,18); assert.equal(ROUNDS.reduce((a,b)=>a+b),17);
 for(let run=0;run<50;run++) {
   const scale = SCALES[run % SCALES.length];
   const g = createGame(Math.random,scale);
@@ -31,12 +31,12 @@ for (let i=5;i<17;i++) {
 assert.equal(g.opened.length,17); assert.equal(selectCard(g,17),false); assert.equal(selectCard(g,-1),false);
 const duplicate = createGame(()=>.999); selectCard(duplicate,17); selectCard(duplicate,0);
 assert.equal(duplicate.opened.map(i=>duplicate.cards[i].prize).length,1);
-assert.equal(duplicate.cards[0].amount,1000); assert.equal(duplicate.cards[1].amount,1000);
+assert.equal(duplicate.cards[0].amount,500); assert.equal(duplicate.cards[1].amount,500);
 for (const scale of SCALES) {
   const scaled = createGame(()=>.999,scale);
-  assert.equal(Math.min(...scaled.amounts),1000*scale);
+  assert.equal(Math.min(...scaled.amounts),500*scale);
   assert.equal(Math.max(...scaled.amounts),10000*scale);
-  assert.equal(scaled.amounts.filter(amount=>amount===1000*scale).length,6);
+  assert.equal(scaled.amounts.filter(amount=>amount===1000*scale).length,1);
   selectCard(scaled,17); for(let i=0;i<5;i++)selectCard(scaled,i);
   assert.equal(deal(scaled),true); assert.deepEqual(scaled.result,{kind:'deal'});
   selectCard(scaled,5); assert.equal(scaled.cards[5].amount,1000*scale);
@@ -46,16 +46,16 @@ assert.throws(()=>createGame(Math.random,0.3),RangeError);
 assert.deepEqual(createGame(()=>.999,1).amounts,AMOUNTS);
 for (const scale of SCALES) {
   const expected = createGame(()=>.999,scale);
-  assert.equal(remainingExpectedValue(expected),75000*scale/18);
+  assert.equal(remainingExpectedValue(expected),71500*scale/18);
   selectCard(expected,17);
-  assert.equal(remainingExpectedValue(expected),75000*scale/18);
+  assert.equal(remainingExpectedValue(expected),71500*scale/18);
   selectCard(expected,0);
-  assert.equal(remainingExpectedValue(expected),74000*scale/17);
+  assert.equal(remainingExpectedValue(expected),71000*scale/17);
   selectCard(expected,16);
-  assert.equal(remainingExpectedValue(expected),64000*scale/16);
+  assert.equal(remainingExpectedValue(expected),61000*scale/16);
   for (const i of [1,2,3]) selectCard(expected,i);
   deal(expected);
-  assert.equal(remainingExpectedValue(expected),51000*scale/12);
+  assert.equal(remainingExpectedValue(expected),49500*scale/12);
   for(let i=4;i<16;i++)selectCard(expected,i);
   assert.equal(remainingExpectedValue(expected),null);
 }
