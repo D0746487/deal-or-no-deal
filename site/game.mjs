@@ -1,4 +1,4 @@
-export const AMOUNTS = [0,500,500,500,500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,10000,10000];
+export const AMOUNTS = [0,500,500,500,500,1000,1500,2000,2500,3000,3500,4000,4500,5000,6000,8000,10000,10000];
 export const ROUNDS = [5,4,3,2,1,1,1];
 export const SCALES = [0.1,0.2,0.5,1];
 export function remainingExpectedValue(game) {
