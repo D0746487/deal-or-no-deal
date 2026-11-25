@@ -1,5 +1,5 @@
-export const AMOUNTS = [0,500,500,500,500,1000,1500,2000,2500,3000,3500,4000,4500,5000,6000,8000,10000,10000];
-export const ROUNDS = [5,4,3,2,1,1,1];
+export const AMOUNTS = [500,1000,1000,1000,1000,1500,2000,2500,3000,4000,5000,6000,10000,10000];
+export const ROUNDS = [4,3,2,1,1,1,1];
 export const SCALES = [0.1,0.2,0.5,1];
 export function remainingExpectedValue(game) {
   const remaining = game.cards.filter((card, index) => !game.opened.includes(index) && !(game.phase === 'finished' && index === game.selected));
@@ -16,7 +16,7 @@ export function createGame(random = Math.random, scale = 1) {
   return { cards, amounts, scale, selected: null, opened: [], round: 0, inRound: 0, phase: 'choose', offer: null, result: null };
 }
 export function selectCard(game, index) {
-  if (!Number.isInteger(index) || index < 0 || index >= 18) return false;
+  if (!Number.isInteger(index) || index < 0 || index >= game.cards.length) return false;
   if (game.phase === 'choose') {
     game.selected = index; game.phase = 'open'; return true;
   }
@@ -27,7 +27,7 @@ export function selectCard(game, index) {
   if (game.phase !== 'open' || index === game.selected || game.opened.includes(index)) return false;
   game.opened.push(index); game.inRound++;
   if (game.inRound === ROUNDS[game.round]) {
-    game.phase = game.round === 6 ? 'finished' : 'offer';
+    game.phase = game.round === ROUNDS.length - 1 ? 'finished' : 'offer';
     if (game.phase === 'finished') game.result = { kind: 'card', amount: game.cards[game.selected].amount };
   }
   return true;

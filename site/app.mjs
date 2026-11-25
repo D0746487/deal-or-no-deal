@@ -35,7 +35,7 @@ function render() {
   const outPrizes = new Set(game.opened.map(i => game.cards[i].prize));
   if (finished) outPrizes.add(game.cards[game.selected].prize);
   const sortedPrizes = game.amounts.map((amount, prize) => ({ amount, prize })).sort((a,b) => a.amount-b.amount);
-  $('prize-list').replaceChildren(...[sortedPrizes.slice(0,9), sortedPrizes.slice(9)].map((prizes, columnIndex) => {
+  $('prize-list').replaceChildren(...[sortedPrizes.slice(0,Math.ceil(sortedPrizes.length/2)), sortedPrizes.slice(Math.ceil(sortedPrizes.length/2))].map((prizes, columnIndex) => {
     const column = document.createElement('section');
     column.className = `prize-column ${columnIndex === 0 ? 'low' : 'high'}`;
     column.setAttribute('aria-label', columnIndex === 0 ? '左欄金額' : '右欄金額');
@@ -47,8 +47,8 @@ function render() {
     }));
     return column;
   }));
-  $('board-count').textContent = choosing ? '18 張待選' : `已開 ${game.opened.length} / 17 張`;
-  $('prize-count').textContent = `${18 - outPrizes.size} 筆剩餘`;
+  $('board-count').textContent = choosing ? `${game.cards.length} 張待選` : `已開 ${game.opened.length} / ${game.cards.length - 1} 張`;
+  $('prize-count').textContent = `${game.cards.length - outPrizes.size} 筆剩餘`;
   const expectation = remainingExpectedValue(game);
   $('expected-value').textContent = expectation === null ? '—' : `NT$ ${expectation.toLocaleString('zh-TW',{maximumFractionDigits:0})}`;
   $('expected-note').textContent = expectation === null ? '所有金額已揭曉' : finished ? '未揭曉金額的平均' : '未揭曉金額的平均，含底牌';
@@ -166,7 +166,7 @@ function scrollToCurrent() {
   if (game.phase === 'offer' || game.phase === 'finished') $(game.phase === 'offer' ? 'offer-panel' : 'result-panel').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block:'center'});
 }
 $('dialog-confirm').onclick = () => {
-  if (modalMode === 'pick') { selectCard(game,pendingCard); render(); announce(`已保留 ${pendingCard+1} 號牌。第一回合開五張。`); }
+  if (modalMode === 'pick') { selectCard(game,pendingCard); render(); announce(`已保留 ${pendingCard+1} 號牌。第一回合開 ${ROUNDS[0]} 張。`); }
   $('card-dialog').close();
 };
 $('card-dialog').addEventListener('close',() => {
@@ -188,7 +188,7 @@ function renderScaleOptions() {
 function openReset() {
   pendingScale = game.scale;
   $('reset-title').textContent = gameStarted ? '重新洗牌？' : '選擇這局的金額';
-  $('reset-description').textContent = gameStarted ? '這局的進度會清除，18 筆金額重新隨機分配。' : '選好金額比例，就能開始挑選你的幸運牌。';
+  $('reset-description').textContent = gameStarted ? '這局的進度會清除，14 筆金額重新隨機分配。' : '選好金額比例，就能開始挑選你的幸運牌。';
   $('cancel-reset').hidden = !gameStarted;
   $('confirm-reset').textContent = gameStarted ? '重新開始' : '開始遊戲';
   renderScaleOptions();
